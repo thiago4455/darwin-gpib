@@ -1,0 +1,21 @@
+//
+//  ni_usb.iig
+//  driver
+//
+//  Created by Thiago Mattos on 14/07/25.
+//
+
+#ifndef ni_usb_h
+#define ni_usb_h
+
+#include <Availability.h>
+#include <DriverKit/IOService.iig>
+
+class ni_usb: public IOService
+{
+public:
+    virtual kern_return_t
+    Start(IOService * provider) override;
+};
+
+#endif /* ni_usb_h */

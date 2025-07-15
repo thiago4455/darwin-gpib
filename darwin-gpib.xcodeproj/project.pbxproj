@@ -7,8 +7,21 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		ECE85F002E25486D00BB5DC5 /* DriverKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ECE85EFF2E25486D00BB5DC5 /* DriverKit.framework */; };
+		ECE85F092E25486D00BB5DC5 /* app.saturno.darwin-gpib.driver.dext in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = ECE85EFD2E25486D00BB5DC5 /* app.saturno.darwin-gpib.driver.dext */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		ECE85F152E27FFD000BB5DC5 /* USBDriverKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ECE85F112E27FE4C00BB5DC5 /* USBDriverKit.framework */; };
 		ECF2B0A42E242E4100952F22 /* AboutWindow in Frameworks */ = {isa = PBXBuildFile; productRef = ECF2B0A32E242E4100952F22 /* AboutWindow */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		ECE85F072E25486D00BB5DC5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ECB71BE12E23451C000FF10F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = ECE85EFC2E25486D00BB5DC5;
+			remoteInfo = driver;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		ECB71C1B2E235ED9000FF10F /* Embed System Extensions */ = {
@@ -17,6 +30,7 @@
 			dstPath = "$(SYSTEM_EXTENSIONS_FOLDER_PATH)";
 			dstSubfolderSpec = 16;
 			files = (
+				ECE85F092E25486D00BB5DC5 /* app.saturno.darwin-gpib.driver.dext in Embed System Extensions */,
 			);
 			name = "Embed System Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -25,12 +39,34 @@
 
 /* Begin PBXFileReference section */
 		ECB71BE92E23451C000FF10F /* Open GPIB.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Open GPIB.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		ECE85EFD2E25486D00BB5DC5 /* app.saturno.darwin-gpib.driver.dext */ = {isa = PBXFileReference; explicitFileType = "wrapper.driver-extension"; includeInIndex = 0; path = "app.saturno.darwin-gpib.driver.dext"; sourceTree = BUILT_PRODUCTS_DIR; };
+		ECE85EFF2E25486D00BB5DC5 /* DriverKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DriverKit.framework; path = System/Library/Frameworks/DriverKit.framework; sourceTree = SDKROOT; };
+		ECE85F112E27FE4C00BB5DC5 /* USBDriverKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = USBDriverKit.framework; path = Platforms/DriverKit.platform/Developer/SDKs/DriverKit24.4.sdk/System/DriverKit/System/Library/Frameworks/USBDriverKit.framework; sourceTree = DEVELOPER_DIR; };
+		ECE85F132E27FE5700BB5DC5 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		ECE85F0A2E25486D00BB5DC5 /* Exceptions for "driver" folder in "driver" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = ECE85EFC2E25486D00BB5DC5 /* driver */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		ECB71BEB2E23451C000FF10F /* Open GPIB */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = "Open GPIB";
+			sourceTree = "<group>";
+		};
+		ECE85F012E25486D00BB5DC5 /* driver */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				ECE85F0A2E25486D00BB5DC5 /* Exceptions for "driver" folder in "driver" target */,
+			);
+			path = driver;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -44,6 +80,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		ECE85EFA2E25486D00BB5DC5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				ECE85F152E27FFD000BB5DC5 /* USBDriverKit.framework in Frameworks */,
+				ECE85F002E25486D00BB5DC5 /* DriverKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -51,6 +96,8 @@
 			isa = PBXGroup;
 			children = (
 				ECB71BEB2E23451C000FF10F /* Open GPIB */,
+				ECE85F012E25486D00BB5DC5 /* driver */,
+				ECE85EFE2E25486D00BB5DC5 /* Frameworks */,
 				ECB71BEA2E23451C000FF10F /* Products */,
 			);
 			sourceTree = "<group>";
@@ -59,11 +106,32 @@
 			isa = PBXGroup;
 			children = (
 				ECB71BE92E23451C000FF10F /* Open GPIB.app */,
+				ECE85EFD2E25486D00BB5DC5 /* app.saturno.darwin-gpib.driver.dext */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
+		ECE85EFE2E25486D00BB5DC5 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				ECE85F132E27FE5700BB5DC5 /* IOKit.framework */,
+				ECE85F112E27FE4C00BB5DC5 /* USBDriverKit.framework */,
+				ECE85EFF2E25486D00BB5DC5 /* DriverKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		ECE85EF82E25486D00BB5DC5 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
 		ECB71BE82E23451C000FF10F /* Open GPIB */ = {
@@ -78,6 +146,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				ECE85F082E25486D00BB5DC5 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				ECB71BEB2E23451C000FF10F /* Open GPIB */,
@@ -90,6 +159,29 @@
 			productReference = ECB71BE92E23451C000FF10F /* Open GPIB.app */;
 			productType = "com.apple.product-type.application";
 		};
+		ECE85EFC2E25486D00BB5DC5 /* driver */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = ECE85F0B2E25486D00BB5DC5 /* Build configuration list for PBXNativeTarget "driver" */;
+			buildPhases = (
+				ECE85EF82E25486D00BB5DC5 /* Headers */,
+				ECE85EF92E25486D00BB5DC5 /* Sources */,
+				ECE85EFA2E25486D00BB5DC5 /* Frameworks */,
+				ECE85EFB2E25486D00BB5DC5 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				ECE85F012E25486D00BB5DC5 /* driver */,
+			);
+			name = driver;
+			packageProductDependencies = (
+			);
+			productName = driver;
+			productReference = ECE85EFD2E25486D00BB5DC5 /* app.saturno.darwin-gpib.driver.dext */;
+			productType = "com.apple.product-type.driver-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -101,6 +193,9 @@
 				LastUpgradeCheck = 1630;
 				TargetAttributes = {
 					ECB71BE82E23451C000FF10F = {
+						CreatedOnToolsVersion = 16.3;
+					};
+					ECE85EFC2E25486D00BB5DC5 = {
 						CreatedOnToolsVersion = 16.3;
 					};
 				};
@@ -123,12 +218,20 @@
 			projectRoot = "";
 			targets = (
 				ECB71BE82E23451C000FF10F /* Open GPIB */,
+				ECE85EFC2E25486D00BB5DC5 /* driver */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		ECB71BE72E23451C000FF10F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		ECE85EFB2E25486D00BB5DC5 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -145,7 +248,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		ECE85EF92E25486D00BB5DC5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		ECE85F082E25486D00BB5DC5 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = ECE85EFC2E25486D00BB5DC5 /* driver */;
+			targetProxy = ECE85F072E25486D00BB5DC5 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		ECB71BF32E23451C000FF10F /* Debug */ = {
@@ -181,7 +299,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 8882GBMRN6;
@@ -246,7 +364,7 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "-";
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8882GBMRN6;
@@ -277,13 +395,13 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = "Open GPIB/darwin_gpib.entitlements";
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "-";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8882GBMRN6;
-				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Open GPIB";
@@ -308,13 +426,13 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = "Open GPIB/darwin_gpib.entitlements";
-				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_IDENTITY = "-";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8882GBMRN6;
-				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Open GPIB";
@@ -329,6 +447,62 @@
 				REGISTER_APP_GROUPS = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+		ECE85F0C2E25486D00BB5DC5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				AD_HOC_CODE_SIGNING_ALLOWED = YES;
+				CODE_SIGN_ENTITLEMENTS = driver/driver.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8882GBMRN6;
+				DRIVERKIT_DEPLOYMENT_TARGET = 24.4;
+				ENABLE_HARDENED_RUNTIME = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/System/DriverKit/System/Library/Frameworks",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = driver/Info.plist;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "app.saturno.darwin-gpib.driver";
+				PRODUCT_NAME = "$(inherited)";
+				RUN_CLANG_STATIC_ANALYZER = YES;
+				SDKROOT = driverkit;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+			};
+			name = Debug;
+		};
+		ECE85F0D2E25486D00BB5DC5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				AD_HOC_CODE_SIGNING_ALLOWED = YES;
+				CODE_SIGN_ENTITLEMENTS = driver/driver.entitlements;
+				CODE_SIGN_IDENTITY = "-";
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 8882GBMRN6;
+				DRIVERKIT_DEPLOYMENT_TARGET = 24.4;
+				ENABLE_HARDENED_RUNTIME = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/System/DriverKit/System/Library/Frameworks",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = driver/Info.plist;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "app.saturno.darwin-gpib.driver";
+				PRODUCT_NAME = "$(inherited)";
+				RUN_CLANG_STATIC_ANALYZER = YES;
+				SDKROOT = driverkit;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
 			};
 			name = Release;
 		};
@@ -349,6 +523,15 @@
 			buildConfigurations = (
 				ECB71BF62E23451C000FF10F /* Debug */,
 				ECB71BF72E23451C000FF10F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		ECE85F0B2E25486D00BB5DC5 /* Build configuration list for PBXNativeTarget "driver" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				ECE85F0C2E25486D00BB5DC5 /* Debug */,
+				ECE85F0D2E25486D00BB5DC5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

@@ -104,6 +104,7 @@ public struct WelcomeView: View {
                         iconName: "cable.connector.horizontal",
                         title: "Reconnect all adaptors",
                         action: {
+                            ExtensionManager.shared.activate()
                         }
                     )
                     .focused($focusedField, equals: .action1)
