@@ -1,0 +1,36 @@
+//
+//  kusb_488b.iig
+//  darwin-gpib driver
+//
+//  IOService that matches the Keithley KUSB-488B (ADLINK USB-3488A) once it
+//  has re-enumerated as VID 0x05E6 / PID 0x488B, and publishes a
+//  GPIBUserClient over the transport.
+//
+
+#ifndef kusb_488b_h
+#define kusb_488b_h
+
+#include <Availability.h>
+#include <DriverKit/IOService.iig>
+#include <DriverKit/IOUserClient.iig>
+
+class GPIBBoard;   // forward — defined in driver/core/GPIBBoard.h
+
+class kusb_488b: public IOService
+{
+public:
+    virtual bool init() override;
+    virtual void free() override;
+
+    virtual kern_return_t Start(IOService * provider) override;
+    virtual kern_return_t Stop(IOService * provider) override;
+
+    virtual kern_return_t NewUserClient(uint32_t type,
+                                         IOUserClient ** userClient) override;
+
+    // Local C++ accessor used by GPIBUserClient — same-process, no IPC
+    // bridging required.
+    virtual GPIBBoard * getBoard() LOCALONLY;
+};
+
+#endif /* kusb_488b_h */

@@ -1,0 +1,26 @@
+//
+//  kusb_488b_loader.iig
+//  darwin-gpib driver
+//
+//  Matches the KUSB-488B in its pre-firmware state (VID 0x05E6/PID 0xEEEE),
+//  downloads the FPGA bitstream and 8051 firmware, and lets the device
+//  re-enumerate as PID 0x488B where kusb_488b takes over.
+//
+
+#ifndef kusb_488b_loader_h
+#define kusb_488b_loader_h
+
+#include <Availability.h>
+#include <DriverKit/IOService.iig>
+
+class kusb_488b_loader: public IOService
+{
+public:
+    virtual bool init() override;
+    virtual void free() override;
+
+    virtual kern_return_t Start(IOService * provider) override;
+    virtual kern_return_t Stop(IOService * provider) override;
+};
+
+#endif /* kusb_488b_loader_h */
