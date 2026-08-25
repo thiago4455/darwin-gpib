@@ -4,10 +4,150 @@
 <dict>
 	<key>IOKitPersonalities</key>
 	<dict>
-		<key>driver</key>
+		<key>agilent_82357a</key>
 		<dict>
 			<key>CFBundleIdentifierKernel</key>
 			<string>com.apple.kpi.iokit</string>
+			<key>GPIBUserClientProperties</key>
+			<dict>
+				<key>CFBundleIdentifierKernel</key>
+				<string>com.apple.kpi.iokit</string>
+				<key>IOClass</key>
+				<string>IOUserUserClient</string>
+				<key>IOUserClass</key>
+				<string>GPIBUserClient</string>
+				<key>IOUserServerName</key>
+				<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			</dict>
+			<key>IOClass</key>
+			<string>IOUserService</string>
+			<key>IOMatchCategory</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			<key>IOProviderClass</key>
+			<string>IOUSBHostInterface</string>
+			<key>IOResourceMatch</key>
+			<string>IOKit</string>
+			<key>IOUserClass</key>
+			<string>agilent_82357</string>
+			<key>IOUserServerName</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			<key>bConfigurationValue</key>
+			<integer>1</integer>
+			<key>bInterfaceNumber</key>
+			<integer>0</integer>
+			<key>idProduct</key>
+			<integer>263</integer>
+			<key>idVendor</key>
+			<integer>2391</integer>
+		</dict>
+		<key>agilent_82357b</key>
+		<dict>
+			<key>CFBundleIdentifierKernel</key>
+			<string>com.apple.kpi.iokit</string>
+			<key>GPIBUserClientProperties</key>
+			<dict>
+				<key>CFBundleIdentifierKernel</key>
+				<string>com.apple.kpi.iokit</string>
+				<key>IOClass</key>
+				<string>IOUserUserClient</string>
+				<key>IOUserClass</key>
+				<string>GPIBUserClient</string>
+				<key>IOUserServerName</key>
+				<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			</dict>
+			<key>IOClass</key>
+			<string>IOUserService</string>
+			<key>IOMatchCategory</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			<key>IOProviderClass</key>
+			<string>IOUSBHostInterface</string>
+			<key>IOResourceMatch</key>
+			<string>IOKit</string>
+			<key>IOUserClass</key>
+			<string>agilent_82357</string>
+			<key>IOUserServerName</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			<key>bConfigurationValue</key>
+			<integer>1</integer>
+			<key>bInterfaceNumber</key>
+			<integer>0</integer>
+			<key>idProduct</key>
+			<integer>1816</integer>
+			<key>idVendor</key>
+			<integer>2391</integer>
+		</dict>
+		<key>kusb_488b</key>
+		<dict>
+			<key>CFBundleIdentifierKernel</key>
+			<string>com.apple.kpi.iokit</string>
+			<key>GPIBUserClientProperties</key>
+			<dict>
+				<key>CFBundleIdentifierKernel</key>
+				<string>com.apple.kpi.iokit</string>
+				<key>IOClass</key>
+				<string>IOUserUserClient</string>
+				<key>IOUserClass</key>
+				<string>GPIBUserClient</string>
+				<key>IOUserServerName</key>
+				<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			</dict>
+			<key>IOClass</key>
+			<string>IOUserService</string>
+			<key>IOMatchCategory</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			<key>IOProviderClass</key>
+			<string>IOUSBHostInterface</string>
+			<key>IOResourceMatch</key>
+			<string>IOKit</string>
+			<key>IOUserClass</key>
+			<string>kusb_488b</string>
+			<key>IOUserServerName</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			<key>bConfigurationValue</key>
+			<integer>1</integer>
+			<key>bInterfaceNumber</key>
+			<integer>0</integer>
+			<key>idProduct</key>
+			<integer>18571</integer>
+			<key>idVendor</key>
+			<integer>1510</integer>
+		</dict>
+		<key>kusb_488b_loader</key>
+		<dict>
+			<key>CFBundleIdentifierKernel</key>
+			<string>com.apple.kpi.iokit</string>
+			<key>IOClass</key>
+			<string>IOUserService</string>
+			<key>IOMatchCategory</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			<key>IOProviderClass</key>
+			<string>IOUSBHostDevice</string>
+			<key>IOResourceMatch</key>
+			<string>IOKit</string>
+			<key>IOUserClass</key>
+			<string>kusb_488b_loader</string>
+			<key>IOUserServerName</key>
+			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			<key>idProduct</key>
+			<integer>61166</integer>
+			<key>idVendor</key>
+			<integer>1510</integer>
+		</dict>
+		<key>ni_usb</key>
+		<dict>
+			<key>CFBundleIdentifierKernel</key>
+			<string>com.apple.kpi.iokit</string>
+			<key>GPIBUserClientProperties</key>
+			<dict>
+				<key>CFBundleIdentifierKernel</key>
+				<string>com.apple.kpi.iokit</string>
+				<key>IOClass</key>
+				<string>IOUserUserClient</string>
+				<key>IOUserClass</key>
+				<string>GPIBUserClient</string>
+				<key>IOUserServerName</key>
+				<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+			</dict>
 			<key>IOClass</key>
 			<string>IOUserService</string>
 			<key>IOMatchCategory</key>
@@ -20,14 +160,14 @@
 			<string>ni_usb</string>
 			<key>IOUserServerName</key>
 			<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-			<key>idVendor</key>
-			<integer>14627</integer>
-			<key>idProduct</key>
-			<integer>28827</integer>
 			<key>bConfigurationValue</key>
 			<integer>1</integer>
 			<key>bInterfaceNumber</key>
 			<integer>0</integer>
+			<key>idProduct</key>
+			<integer>28827</integer>
+			<key>idVendor</key>
+			<integer>14627</integer>
 		</dict>
 	</dict>
 	<key>OSBundleUsageDescription</key>

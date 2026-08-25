@@ -7,3 +7,11 @@ DerivedData/
 .swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 .netrc
 
+kusb_488b_firmware_data.h
+/build/
+tools/gpib_probe
+.venv/
+gpibd/gpibd
+tools/gpibctl
+/linux-gpib/
+tools/__pycache__/

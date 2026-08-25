@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		EC84CC5F303E1286009105E9 /* libgpib_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = EC84CC57303E1286009105E9 /* libgpib_internal.h */; };
+		EC84CC60303E1286009105E9 /* client.c in Sources */ = {isa = PBXBuildFile; fileRef = EC84CC59303E1286009105E9 /* client.c */; };
+		EC84CC61303E1286009105E9 /* ib_488_2.c in Sources */ = {isa = PBXBuildFile; fileRef = EC84CC5B303E1286009105E9 /* ib_488_2.c */; };
+		EC84CC62303E1286009105E9 /* error.c in Sources */ = {isa = PBXBuildFile; fileRef = EC84CC5A303E1286009105E9 /* error.c */; };
+		EC84CC63303E1286009105E9 /* ib_traditional.c in Sources */ = {isa = PBXBuildFile; fileRef = EC84CC5C303E1286009105E9 /* ib_traditional.c */; };
+		EC84CC64303E22BB009105E9 /* libgpib.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EC84CC53303E1224009105E9 /* libgpib.dylib */; };
+		EC84CC65303E22BB009105E9 /* libgpib.dylib in Embed Libraries */ = {isa = PBXBuildFile; fileRef = EC84CC53303E1224009105E9 /* libgpib.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		EC84CF04303F23A3009105E9 /* gpibd in CopyFiles */ = {isa = PBXBuildFile; fileRef = EC84CEEE303F2255009105E9 /* gpibd */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		ECE85F002E25486D00BB5DC5 /* DriverKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ECE85EFF2E25486D00BB5DC5 /* DriverKit.framework */; };
 		ECE85F092E25486D00BB5DC5 /* app.saturno.darwin-gpib.driver.dext in Embed System Extensions */ = {isa = PBXBuildFile; fileRef = ECE85EFD2E25486D00BB5DC5 /* app.saturno.darwin-gpib.driver.dext */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		ECE85F152E27FFD000BB5DC5 /* USBDriverKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = ECE85F112E27FE4C00BB5DC5 /* USBDriverKit.framework */; };
@@ -14,6 +22,20 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		EC84CC66303E22BB009105E9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ECB71BE12E23451C000FF10F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EC84CC52303E1224009105E9;
+			remoteInfo = gpib;
+		};
+		EC84CF01303F234B009105E9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = ECB71BE12E23451C000FF10F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EC84CEED303F2255009105E9;
+			remoteInfo = gpibd;
+		};
 		ECE85F072E25486D00BB5DC5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = ECB71BE12E23451C000FF10F /* Project object */;
@@ -24,6 +46,45 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		EC84CC68303E22BB009105E9 /* Embed Libraries */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				EC84CC65303E22BB009105E9 /* libgpib.dylib in Embed Libraries */,
+			);
+			name = "Embed Libraries";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EC84CEEC303F2255009105E9 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = /usr/share/man/man1/;
+			dstSubfolderSpec = 0;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 1;
+		};
+		EC84CF03303F2369009105E9 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 6;
+			files = (
+				EC84CF04303F23A3009105E9 /* gpibd in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EC84CF05303F23AD009105E9 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = Contents/Library/LaunchAgents;
+			dstSubfolderSpec = 1;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		ECB71C1B2E235ED9000FF10F /* Embed System Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -38,6 +99,13 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		EC84CC53303E1224009105E9 /* libgpib.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libgpib.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		EC84CC57303E1286009105E9 /* libgpib_internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = libgpib_internal.h; sourceTree = "<group>"; };
+		EC84CC59303E1286009105E9 /* client.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = client.c; sourceTree = "<group>"; };
+		EC84CC5A303E1286009105E9 /* error.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = error.c; sourceTree = "<group>"; };
+		EC84CC5B303E1286009105E9 /* ib_488_2.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ib_488_2.c; sourceTree = "<group>"; };
+		EC84CC5C303E1286009105E9 /* ib_traditional.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = ib_traditional.c; sourceTree = "<group>"; };
+		EC84CEEE303F2255009105E9 /* gpibd */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = gpibd; sourceTree = BUILT_PRODUCTS_DIR; };
 		ECB71BE92E23451C000FF10F /* Open GPIB.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Open GPIB.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ECE85EFD2E25486D00BB5DC5 /* app.saturno.darwin-gpib.driver.dext */ = {isa = PBXFileReference; explicitFileType = "wrapper.driver-extension"; includeInIndex = 0; path = "app.saturno.darwin-gpib.driver.dext"; sourceTree = BUILT_PRODUCTS_DIR; };
 		ECE85EFF2E25486D00BB5DC5 /* DriverKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = DriverKit.framework; path = System/Library/Frameworks/DriverKit.framework; sourceTree = SDKROOT; };
@@ -55,7 +123,25 @@
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		EC84CF07303F23DB009105E9 /* Exceptions for "gpibd" folder in "Copy Files" phase from "Open GPIB" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = EC84CF05303F23AD009105E9 /* CopyFiles */;
+			membershipExceptions = (
+				"app.saturno.darwin-gpib.gpibd.plist",
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		EC84CEEF303F2255009105E9 /* gpibd */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				EC84CF07303F23DB009105E9 /* Exceptions for "gpibd" folder in "Copy Files" phase from "Open GPIB" target */,
+			);
+			path = gpibd;
+			sourceTree = "<group>";
+		};
 		ECB71BEB2E23451C000FF10F /* Open GPIB */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = "Open GPIB";
@@ -72,10 +158,25 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		EC84CC51303E1224009105E9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EC84CEEB303F2255009105E9 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		ECB71BE62E23451C000FF10F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EC84CC64303E22BB009105E9 /* libgpib.dylib in Frameworks */,
 				ECF2B0A42E242E4100952F22 /* AboutWindow in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -92,13 +193,43 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		EC84CC58303E1286009105E9 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				EC84CC57303E1286009105E9 /* libgpib_internal.h */,
+			);
+			path = include;
+			sourceTree = "<group>";
+		};
+		EC84CC5D303E1286009105E9 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				EC84CC59303E1286009105E9 /* client.c */,
+				EC84CC5A303E1286009105E9 /* error.c */,
+				EC84CC5B303E1286009105E9 /* ib_488_2.c */,
+				EC84CC5C303E1286009105E9 /* ib_traditional.c */,
+			);
+			path = src;
+			sourceTree = "<group>";
+		};
+		EC84CC5E303E1286009105E9 /* libgpib */ = {
+			isa = PBXGroup;
+			children = (
+				EC84CC58303E1286009105E9 /* include */,
+				EC84CC5D303E1286009105E9 /* src */,
+			);
+			path = libgpib;
+			sourceTree = "<group>";
+		};
 		ECB71BE02E23451C000FF10F = {
 			isa = PBXGroup;
 			children = (
 				ECB71BEB2E23451C000FF10F /* Open GPIB */,
 				ECE85F012E25486D00BB5DC5 /* driver */,
+				EC84CEEF303F2255009105E9 /* gpibd */,
 				ECE85EFE2E25486D00BB5DC5 /* Frameworks */,
 				ECB71BEA2E23451C000FF10F /* Products */,
+				EC84CC5E303E1286009105E9 /* libgpib */,
 			);
 			sourceTree = "<group>";
 		};
@@ -107,6 +238,8 @@
 			children = (
 				ECB71BE92E23451C000FF10F /* Open GPIB.app */,
 				ECE85EFD2E25486D00BB5DC5 /* app.saturno.darwin-gpib.driver.dext */,
+				EC84CC53303E1224009105E9 /* libgpib.dylib */,
+				EC84CEEE303F2255009105E9 /* gpibd */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -124,6 +257,14 @@
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
+		EC84CC4F303E1224009105E9 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EC84CC5F303E1286009105E9 /* libgpib_internal.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		ECE85EF82E25486D00BB5DC5 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -134,6 +275,47 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
+		EC84CC52303E1224009105E9 /* gpib */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EC84CC54303E1224009105E9 /* Build configuration list for PBXNativeTarget "gpib" */;
+			buildPhases = (
+				EC84CC4F303E1224009105E9 /* Headers */,
+				EC84CC50303E1224009105E9 /* Sources */,
+				EC84CC51303E1224009105E9 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = gpib;
+			packageProductDependencies = (
+			);
+			productName = gpib;
+			productReference = EC84CC53303E1224009105E9 /* libgpib.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+		EC84CEED303F2255009105E9 /* gpibd */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EC84CEF2303F2255009105E9 /* Build configuration list for PBXNativeTarget "gpibd" */;
+			buildPhases = (
+				EC84CEEA303F2255009105E9 /* Sources */,
+				EC84CEEB303F2255009105E9 /* Frameworks */,
+				EC84CEEC303F2255009105E9 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				EC84CEEF303F2255009105E9 /* gpibd */,
+			);
+			name = gpibd;
+			packageProductDependencies = (
+			);
+			productName = gpibd;
+			productReference = EC84CEEE303F2255009105E9 /* gpibd */;
+			productType = "com.apple.product-type.tool";
+		};
 		ECB71BE82E23451C000FF10F /* Open GPIB */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = ECB71BF52E23451C000FF10F /* Build configuration list for PBXNativeTarget "Open GPIB" */;
@@ -142,11 +324,16 @@
 				ECB71BE62E23451C000FF10F /* Frameworks */,
 				ECB71BE72E23451C000FF10F /* Resources */,
 				ECB71C1B2E235ED9000FF10F /* Embed System Extensions */,
+				EC84CC68303E22BB009105E9 /* Embed Libraries */,
+				EC84CF03303F2369009105E9 /* CopyFiles */,
+				EC84CF05303F23AD009105E9 /* CopyFiles */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				EC84CF02303F234B009105E9 /* PBXTargetDependency */,
 				ECE85F082E25486D00BB5DC5 /* PBXTargetDependency */,
+				EC84CC67303E22BB009105E9 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				ECB71BEB2E23451C000FF10F /* Open GPIB */,
@@ -192,6 +379,12 @@
 				LastSwiftUpdateCheck = 1630;
 				LastUpgradeCheck = 1630;
 				TargetAttributes = {
+					EC84CC52303E1224009105E9 = {
+						CreatedOnToolsVersion = 26.5;
+					};
+					EC84CEED303F2255009105E9 = {
+						CreatedOnToolsVersion = 26.5;
+					};
 					ECB71BE82E23451C000FF10F = {
 						CreatedOnToolsVersion = 16.3;
 					};
@@ -219,6 +412,8 @@
 			targets = (
 				ECB71BE82E23451C000FF10F /* Open GPIB */,
 				ECE85EFC2E25486D00BB5DC5 /* driver */,
+				EC84CC52303E1224009105E9 /* gpib */,
+				EC84CEED303F2255009105E9 /* gpibd */,
 			);
 		};
 /* End PBXProject section */
@@ -241,6 +436,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		EC84CC50303E1224009105E9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EC84CC60303E1286009105E9 /* client.c in Sources */,
+				EC84CC61303E1286009105E9 /* ib_488_2.c in Sources */,
+				EC84CC62303E1286009105E9 /* error.c in Sources */,
+				EC84CC63303E1286009105E9 /* ib_traditional.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EC84CEEA303F2255009105E9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		ECB71BE52E23451C000FF10F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -258,6 +471,16 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		EC84CC67303E22BB009105E9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EC84CC52303E1224009105E9 /* gpib */;
+			targetProxy = EC84CC66303E22BB009105E9 /* PBXContainerItemProxy */;
+		};
+		EC84CF02303F234B009105E9 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EC84CEED303F2255009105E9 /* gpibd */;
+			targetProxy = EC84CF01303F234B009105E9 /* PBXContainerItemProxy */;
+		};
 		ECE85F082E25486D00BB5DC5 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = ECE85EFC2E25486D00BB5DC5 /* driver */;
@@ -266,6 +489,90 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		EC84CC55303E1224009105E9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = F34U2UUGXX;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/libgpib/include",
+					"$(SRCROOT)/gpibd",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				OTHER_LDFLAGS = (
+					"-framework",
+					IOKit,
+					"-framework",
+					CoreFoundation,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		EC84CC56303E1224009105E9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = F34U2UUGXX;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				EXECUTABLE_PREFIX = lib;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/libgpib/include",
+					"$(SRCROOT)/gpibd",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 12.4;
+				OTHER_LDFLAGS = (
+					"-framework",
+					IOKit,
+					"-framework",
+					CoreFoundation,
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		EC84CEF3303F2255009105E9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = gpibd/gpibd.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = F34U2UUGXX;
+				ENABLE_HARDENED_RUNTIME = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/driver/gpib",
+					"$(SRCROOT)/gpibd",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				PRELINK_LIBS = "CoreFoundation.framework IOKit.framework";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		EC84CEF4303F2255009105E9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = gpibd/gpibd.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = F34U2UUGXX;
+				ENABLE_HARDENED_RUNTIME = YES;
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/driver/gpib",
+					"$(SRCROOT)/gpibd",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 26.5;
+				PRELINK_LIBS = "CoreFoundation.framework IOKit.framework";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		ECB71BF32E23451C000FF10F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -400,7 +707,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 8882GBMRN6;
+				DEVELOPMENT_TEAM = F34U2UUGXX;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -431,7 +738,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 8882GBMRN6;
+				DEVELOPMENT_TEAM = F34U2UUGXX;
 				ENABLE_HARDENED_RUNTIME = NO;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -459,7 +766,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 8882GBMRN6;
+				DEVELOPMENT_TEAM = F34U2UUGXX;
 				DRIVERKIT_DEPLOYMENT_TARGET = 24.4;
 				ENABLE_HARDENED_RUNTIME = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -487,7 +794,7 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "-";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 8882GBMRN6;
+				DEVELOPMENT_TEAM = F34U2UUGXX;
 				DRIVERKIT_DEPLOYMENT_TARGET = 24.4;
 				ENABLE_HARDENED_RUNTIME = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -509,6 +816,24 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		EC84CC54303E1224009105E9 /* Build configuration list for PBXNativeTarget "gpib" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EC84CC55303E1224009105E9 /* Debug */,
+				EC84CC56303E1224009105E9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		EC84CEF2303F2255009105E9 /* Build configuration list for PBXNativeTarget "gpibd" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EC84CEF3303F2255009105E9 /* Debug */,
+				EC84CEF4303F2255009105E9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		ECB71BE42E23451C000FF10F /* Build configuration list for PBXProject "darwin-gpib" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

@@ -9,84 +9,151 @@
 
 #include <DriverKit/IOUserServer.h>
 #include <DriverKit/IOLib.h>
+#include <DriverKit/OSString.h>
 #include <USBDriverKit/IOUSBHostInterface.h>
 #include <USBDriverKit/IOUSBHostPipe.h>
-#include <DriverKit/OSString.h>
 
 #include "DriverUtils.h"
 #include "ni_usb.h"
+#include "NIUSBTransport.h"
+#include "GPIBBoard.h"
 
+struct ni_usb_IVars {
+    IOUSBHostInterface *interface;
+    NIUSBTransport     *transport;
+    GPIBBoard          *board;
+};
 
-kern_return_t
-IMPL(ni_usb, Start)
-{
-    kern_return_t ret;
-    ret = Start(provider, SUPERDISPATCH);
-    
+bool ni_usb::init() {
+    if (!super::init()) return false;
+    ivars = IONewZero(ni_usb_IVars, 1);
+    return ivars != nullptr;
+}
+
+void ni_usb::free() {
+    if (ivars) {
+        if (ivars->board) {
+            ivars->board->free();
+            IOSafeDeleteNULL(ivars->board, GPIBBoard, 1);
+        }
+        if (ivars->transport) {
+            ivars->transport->free();
+            IOSafeDeleteNULL(ivars->transport, NIUSBTransport, 1);
+        }
+        OSSafeReleaseNULL(ivars->interface);
+        IOSafeDeleteNULL(ivars, ni_usb_IVars, 1);
+    }
+    super::free();
+}
+
+GPIBBoard *ni_usb::getBoard() {
+    return ivars ? ivars->board : nullptr;
+}
+
+kern_return_t IMPL(ni_usb, Start) {
+    kern_return_t ret = Start(provider, SUPERDISPATCH);
     if (ret != kIOReturnSuccess) {
-        os_log(OS_LOG_DEFAULT, "Driver failed to start");
+        os_log(OS_LOG_DEFAULT, "ni_usb: super::Start failed 0x%x", ret);
         return ret;
     }
-    
-    os_log(OS_LOG_DEFAULT, "Driver started successfully");
-    
-    
-//    IOUSBHostDevice *usbDevice = OSDynamicCast(IOUSBHostDevice, provider);
-//    if (usbDevice == nullptr) {
-//        os_log(OS_LOG_DEFAULT, "Provider is not a USB device");
-//        return kIOReturnUnsupported;
-//    }
-    
-    
+
     IOUSBHostInterface *usbInterface = OSDynamicCast(IOUSBHostInterface, provider);
-    if (usbInterface == nullptr) {
-        os_log(OS_LOG_DEFAULT, "Provider is not a USB interface");
+    if (!usbInterface) {
+        os_log(OS_LOG_DEFAULT, "ni_usb: provider is not IOUSBHostInterface");
         return kIOReturnUnsupported;
     }
+    usbInterface->retain();
+    ivars->interface = usbInterface;
 
-    
-    // Retrieve basic device information
-    uint16_t vendorID = 0;
-    uint16_t productID = 0;
-    
-    
-    const IOUSBConfigurationDescriptor *_configurationDescriptor;
-    const IOUSBInterfaceDescriptor *_interfaceDescriptor;
-    const IOUSBStringDescriptor *_stringDescriptor;
-    
-    _configurationDescriptor = usbInterface->CopyConfigurationDescriptor();
-    _interfaceDescriptor = usbInterface->GetInterfaceDescriptor(_configurationDescriptor);
-    
-    if (!_configurationDescriptor || !_interfaceDescriptor) {
-        os_log(OS_LOG_DEFAULT, "Failed to get USB descriptors");
+    // Log basic descriptor info (preserves the existing diagnostic behaviour).
+    const IOUSBConfigurationDescriptor *cfgDesc = usbInterface->CopyConfigurationDescriptor();
+    const IOUSBInterfaceDescriptor *ifDesc =
+        cfgDesc ? usbInterface->GetInterfaceDescriptor(cfgDesc) : nullptr;
+    if (!cfgDesc || !ifDesc) {
+        os_log(OS_LOG_DEFAULT, "ni_usb: failed to get USB descriptors");
+        if (cfgDesc) IOFree((void *)cfgDesc, cfgDesc->bLength);
         return kIOReturnError;
     }
-    
-    IOUSBHostDevice *usbDevice;
-    const IOUSBDeviceDescriptor *descriptor;
-    if(usbInterface->CopyDevice(&usbDevice) == kIOReturnSuccess){
-        descriptor = usbDevice->CopyDeviceDescriptor();
-        vendorID = descriptor->idVendor;
-        productID = descriptor->idProduct;
-        
-        _stringDescriptor = usbDevice->CopyStringDescriptor(descriptor->iProduct);
-        OSString *productString = copyDeviceString(_stringDescriptor, "Unknown");
-        const char *productCString = productString ? productString->getCStringNoCopy() : "Unknown";
 
-        os_log(OS_LOG_DEFAULT, "USB Device connected: Vendor ID = 0x%04x, Product ID = 0x%04x, Product = %{public}s",
-                   vendorID, productID, productCString);
-        /// Free string descriptor
-        IOFree((void *)_stringDescriptor, _stringDescriptor->bLength);
-        OSSafeReleaseNULL(productString);
-    } else {
-        os_log(OS_LOG_DEFAULT, "Failed to get USB device descriptor");
+    IOUSBHostDevice *usbDevice = nullptr;
+    if (usbInterface->CopyDevice(&usbDevice) == kIOReturnSuccess && usbDevice) {
+        const IOUSBDeviceDescriptor *dev = usbDevice->CopyDeviceDescriptor();
+        if (dev) {
+            const IOUSBStringDescriptor *prodStr =
+                usbDevice->CopyStringDescriptor(dev->iProduct);
+            OSString *product = copyDeviceString(prodStr, "NI USB GPIB");
+            os_log(OS_LOG_DEFAULT,
+                   "ni_usb: USB device VID=0x%04x PID=0x%04x product=%{public}s",
+                   dev->idVendor, dev->idProduct,
+                   product ? product->getCStringNoCopy() : "?");
+            if (prodStr) IOFree((void *)prodStr, prodStr->bLength);
+            OSSafeReleaseNULL(product);
+        }
+        OSSafeReleaseNULL(usbDevice);
     }
-    
-    OSSafeReleaseNULL(usbDevice);
-    IOFree((void *)_configurationDescriptor, _configurationDescriptor->bLength);
-    
-    
-    
-    
-    return ret;
+    IOFree((void *)cfgDesc, cfgDesc->bLength);
+
+    // Open the interface so we can use its pipes.
+    ret = usbInterface->Open(this, 0, nullptr);
+    if (ret != kIOReturnSuccess) {
+        os_log(OS_LOG_DEFAULT, "ni_usb: IOUSBHostInterface::Open failed 0x%x", ret);
+        return ret;
+    }
+
+    // Build the transport.
+    // Constructed, not just allocated — see IONewZeroConstruct in DriverUtils.h.
+    ivars->transport = IONewZeroConstruct<NIUSBTransport>();
+    if (!ivars->transport || !ivars->transport->init(usbInterface)) {
+        os_log(OS_LOG_DEFAULT, "ni_usb: transport init failed");
+        return kIOReturnNoMemory;
+    }
+    uint32_t rc = ivars->transport->attach();
+    if (rc != 0) {
+        os_log(OS_LOG_DEFAULT, "ni_usb: transport attach failed rc=%u", rc);
+        return kIOReturnError;
+    }
+
+    // Build the board state machine.
+    ivars->board = IONewZero(GPIBBoard, 1);
+    if (!ivars->board || !ivars->board->init(ivars->transport)) {
+        os_log(OS_LOG_DEFAULT, "ni_usb: board init failed");
+        return kIOReturnNoMemory;
+    }
+
+    // Bring the board online with M1 defaults (system controller, REN asserted).
+    ivars->board->setOnline(true);
+
+    // Publish to the IORegistry so the host app can open the user client.
+    RegisterService();
+    os_log(OS_LOG_DEFAULT, "ni_usb: started and registered");
+    return kIOReturnSuccess;
+}
+
+kern_return_t IMPL(ni_usb, Stop) {
+    os_log(OS_LOG_DEFAULT, "ni_usb: Stop");
+    if (ivars && ivars->board) ivars->board->setOnline(false);
+    if (ivars && ivars->interface) {
+        ivars->interface->Close(this, 0);
+    }
+    return Stop(provider, SUPERDISPATCH);
+}
+
+kern_return_t IMPL(ni_usb, NewUserClient) {
+    if (type != 0) {
+        os_log(OS_LOG_DEFAULT, "ni_usb: NewUserClient unknown type %u", type);
+        return kIOReturnBadArgument;
+    }
+    IOService *client = nullptr;
+    kern_return_t ret = Create(this, "GPIBUserClientProperties", &client);
+    if (ret != kIOReturnSuccess) {
+        os_log(OS_LOG_DEFAULT, "ni_usb: Create user client failed 0x%x", ret);
+        return ret;
+    }
+    *userClient = OSDynamicCast(IOUserClient, client);
+    if (!*userClient) {
+        os_log(OS_LOG_DEFAULT, "ni_usb: created user client is not IOUserClient");
+        client->release();
+        return kIOReturnNoMemory;
+    }
+    return kIOReturnSuccess;
 }
