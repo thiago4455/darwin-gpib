@@ -1,0 +1,35 @@
+//
+//  agilent_82357.iig
+//  darwin-gpib driver
+//
+//  IOService that matches against Agilent 82357A/B USB→GPIB adapters and
+//  publishes a GPIBUserClient once the transport is initialised.
+//
+
+#ifndef agilent_82357_h
+#define agilent_82357_h
+
+#include <Availability.h>
+#include <DriverKit/IOService.iig>
+#include <DriverKit/IOUserClient.iig>
+
+class GPIBBoard;   // forward — defined in driver/core/GPIBBoard.h
+
+class agilent_82357: public IOService
+{
+public:
+    virtual bool init() override;
+    virtual void free() override;
+
+    virtual kern_return_t Start(IOService * provider) override;
+    virtual kern_return_t Stop(IOService * provider) override;
+
+    virtual kern_return_t NewUserClient(uint32_t type,
+                                         IOUserClient ** userClient) override;
+
+    // Local C++ accessor used by GPIBUserClient — same-process, no IPC
+    // bridging required.
+    virtual GPIBBoard * getBoard() LOCALONLY;
+};
+
+#endif /* agilent_82357_h */
