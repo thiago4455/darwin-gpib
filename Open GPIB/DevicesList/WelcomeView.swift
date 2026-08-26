@@ -18,6 +18,8 @@ public struct WelcomeView: View {
     @Environment(\.controlActiveState)
     private var controlActiveState
 
+    @EnvironmentObject private var store: DevicesStore
+
     @State private var isHoveringCloseButton = false
     @State private var appIconAverageColor: Color = .accentColor
 
@@ -97,6 +99,7 @@ public struct WelcomeView: View {
                         iconName: "arrow.clockwise",
                         title: "Refresh devices list",
                         action: {
+                            store.refresh()
                         }
                     )
                     .focused($focusedField, equals: .action1)

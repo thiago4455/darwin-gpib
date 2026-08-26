@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Registered by Open GPIB via SMAppService.agent(plistName:). Must live
+         at Contents/Library/LaunchAgents/ inside the app bundle. -->
+    <key>Label</key>
+    <string>app.saturno.darwin-gpib.gpibd</string>
+
+    <!-- BundleProgram, not Program: the path is relative to the app bundle, so
+         the agent resolves wherever the app is installed. -->
+    <key>BundleProgram</key>
+    <string>Contents/MacOS/gpibd</string>
+
+    <!-- This key is what makes the service reachable by ANY process in the
+         session. Without it there is no global Mach name to look up, and
+         python could never find the broker. -->
+    <key>MachServices</key>
+    <dict>
+        <key>app.saturno.darwin-gpib.gpibd</key>
+        <true/>
+    </dict>
+
+    <!-- No RunAtLoad: MachServices alone gives on-demand launch. -->
+    <key>ProcessType</key>
+    <string>Adaptive</string>
+</dict>
+</plist>
