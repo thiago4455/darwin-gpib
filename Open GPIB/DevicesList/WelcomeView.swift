@@ -20,6 +20,10 @@ public struct WelcomeView: View {
 
     @EnvironmentObject private var store: DevicesStore
 
+    // Drives the driver button's title: what pressing it will actually do
+    // depends on what is already installed. See DriverState.
+    @ObservedObject private var extensionManager = ExtensionManager.shared
+
     @State private var isHoveringCloseButton = false
     @State private var appIconAverageColor: Color = .accentColor
 
@@ -105,7 +109,7 @@ public struct WelcomeView: View {
                     .focused($focusedField, equals: .action1)
                     WelcomeButton(
                         iconName: "cable.connector.horizontal",
-                        title: "Reconnect all adaptors",
+                        title: extensionManager.state.buttonTitle,
                         action: {
                             ExtensionManager.shared.activate()
                         }
@@ -118,6 +122,8 @@ public struct WelcomeView: View {
         }
         .padding(.top, 20)
         .padding(.horizontal, 56)
+        // Read-only properties request; safe to repeat, unlike activate().
+        .onAppear { ExtensionManager.shared.refreshState() }
         .padding(.bottom, 16)
         .frame(width: 460)
         .frame(maxHeight: .infinity)

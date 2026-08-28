@@ -24,6 +24,12 @@ struct darwin_gpibApp: App {
         // than rate-limited: "Reconnect all adaptors" already does this
         // deliberately, one click at a time, which is the pace that actually
         // works.
+
+        // PythonSupport is deliberately NOT installed here. Registering its
+        // login agent makes macOS show "Background Items Added", and that
+        // notification is only meaningful next to an explicit request to
+        // install the driver — so it happens on the driver button instead.
+        // See ExtensionManager.activate().
     }
 
     var body: some Scene {
