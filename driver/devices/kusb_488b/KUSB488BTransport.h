@@ -128,7 +128,7 @@ private:
     // bus role anywhere — the vendor issues none, and the working theory
     // for why an earlier, register-addressed + firmware-data hybrid failed
     // is that the firmware keeps its own model of bus state that register
-    // addressing behind its back leaves stale. See docs/STATUS.md.
+    // addressing behind its back leaves stale.
     uint32_t sendCommandBytesViaFirmware(const uint8_t *cmds, uint32_t len);
     uint32_t writeDataViaFirmware(const uint8_t *buf, uint32_t len, bool send_eoi,
                                  uint32_t timeout_us, uint32_t *outBytesWritten);

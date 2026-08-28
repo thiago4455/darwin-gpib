@@ -7,7 +7,7 @@
 //
 //  The driver's user client already speaks a uniform struct-in / struct-out
 //  protocol across all 18 selectors, so the XPC envelope only has to carry a
-//  selector, a board index, and two opaque blobs. See docs/gpibd.md.
+//  selector, a board index, and two opaque blobs.
 //
 
 #ifndef gpibd_protocol_h

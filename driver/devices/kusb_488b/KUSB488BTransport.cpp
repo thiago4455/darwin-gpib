@@ -871,7 +871,7 @@ uint32_t KUSB488BTransport::sendCommandBytesViaFirmware(const uint8_t *cmds, uin
     // This only works if nothing else is talking to the bus behind our back:
     // the app's device auto-scan is a second client and will leave a stale
     // armed transfer here. Launch the app with OPENGPIB_NO_AUTOSCAN=1 when
-    // testing (see docs/STATUS.md).
+    // testing.
 
     // No AUX_TCA poke here any more. That used to be needed only because
     // bring-up left ADMR unprogrammed, so the core never became talker from
@@ -1448,7 +1448,7 @@ uint32_t KUSB488BTransport::readData(uint8_t *buf, uint32_t request_count,
 }
 
 // Exposes the 0xBD register read for gpibctl regs/peek — a supported
-// debugging aid, not scaffolding to remove. See docs/testing.md.
+// debugging aid, not scaffolding to remove.
 uint32_t KUSB488BTransport::readRawRegister(uint16_t reg, uint8_t *outValue) {
     uint8_t v = 0;
     uint16_t got = 0;

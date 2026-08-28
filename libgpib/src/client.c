@@ -7,7 +7,7 @@
 //  This library is loaded into arbitrary, unentitled processes — python,
 //  LabVIEW, whatever the user links it into — and DriverKit will not let such
 //  a process open the driver's user client. So we do not open it: gpibd holds
-//  that connection and we send it messages. See docs/gpibd.md.
+//  that connection and we send it messages.
 //
 //  One XPC connection serves the whole process; the board index rides in each
 //  message. Board reachability is cached and dropped the moment the broker

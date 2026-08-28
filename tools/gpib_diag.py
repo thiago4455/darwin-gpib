@@ -4,8 +4,7 @@ gpib_diag.py — bring-up helper for darwin-gpib.
 
 Prints information the log/UI don't surface: whether the dext is installed,
 which USB devices match a personality, the raw USB descriptor of a matched
-adapter, and simple round-trips against libgpib. See docs/testing.md for the
-intended workflow.
+adapter, and simple round-trips against libgpib.
 
 Usage:
     tools/gpib_diag.py --status           # dext state + matched services

@@ -99,7 +99,7 @@ public:
     }
 
     // Read one hardware register by selector — backs gpibctl regs/peek, a
-    // supported debugging aid (see docs/testing.md), not scaffolding.
+    // supported debugging aid, not scaffolding.
     virtual uint32_t readRawRegister(uint16_t reg, uint8_t *outValue) {
         (void)reg; (void)outValue;
         return GPIBT_ERR_IO;
