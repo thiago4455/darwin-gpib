@@ -88,6 +88,7 @@ public:
     // TEMPORARY diagnostic passthrough — see GPIBTransport.h.
     uint32_t readRawRegisterDiag(uint16_t reg, uint8_t *outValue);
     uint32_t writeRawRegisterDiag(uint16_t reg, uint8_t value);
+    uint32_t setMaxDataChunkDiag(uint32_t bytes);
     // Operator-triggered recovery (see recoverBus). softResetDiag re-runs the
     // chip bring-up; resetDeviceDiag forces a USB re-enumeration and tears
     // this instance down.

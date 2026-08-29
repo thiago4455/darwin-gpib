@@ -131,37 +131,31 @@
 
 // Maximum bytes per 0xB9 data-write transfer.
 //
-// 64. Do NOT raise this without re-testing THROUGH THE DRIVER on hardware.
+// RESOLVED 2026-08-28: the ~85-byte un-chunked write ceiling was never a
+// firmware limit. It was pollStatus() giving up too early.
 //
-// A single un-chunked write over ~85 bytes fails on the driver path. Measured
-// 2026-08-28 on a freshly reset instrument and adapter, stopping at the first
-// failure so nothing cascaded: 85 B writes fine and leaves the bus healthy
-// with an empty instrument error queue; 90 B returns EBUS with ibcnt=0 --
-// i.e. the firmware accepts the arm, takes the bulk data, and then reports
-// DONE with count = 0. A single failure is survivable, but repeated ones
-// degrade the bus until even addressing returns ENOL and no software recovery
-// (`gpibctl reinit` included) clears it -- only a physical replug does.
+// The device stops answering status requests while it is busy with a transfer,
+// for longer as the transfer grows. pollStatus() allowed 5 retries of
+// IOSleep(2) -- a 10 ms budget -- and then returned GPIBT_ERR_IO with
+// count = 0, which surfaced as a write that "failed above ~85 bytes". The
+// giveaway was that the threshold MOVED between host builds (85/90, then
+// exactly 90 OK / 91 fail): a firmware buffer limit cannot do that, a timing
+// limit can. tools/kusb_harness.py never hit it because its equivalent budget
+// is 5 x 5 ms and it sleeps between polls -- which is the whole of the
+// long-standing "harness and driver diverge" mystery.
 //
-// TRAP, recorded so nobody repeats it. The identical un-chunked writes SUCCEED
-// on tools/kusb_harness.py at 60 / 100 / 125 / 200 / 255 / 510 / 1000 bytes,
-// flat at ~150 us/byte, empty error queue, healthy device after each -- and
-// the vendor driver does not chunk either (FUN_1400036e0 passes the caller's
-// whole length in one 0xB9). That evidence looks conclusive. It is not: the
-// harness and the driver genuinely diverge here and the reason is NOT yet
-// understood. Harness agreement is not sufficient evidence to raise this.
+// With the budget made time-based (kStatusGlitchBudgetNs) and a 1 ms breath
+// between BUSY polls, un-chunked writes now match the harness exactly: 90 /
+// 100 / 200 / 400 / 700 / 1000 bytes all clean, 1000 B in 153.7 ms
+// (~154 us/byte), empty instrument error queue, healthy device after each.
 //
-// Ruled out as the cause: the header timeout (the driver passes 10000 ms,
-// MORE than the harness's 8000), transfer freshness (it fails as the very
-// first operation after a reinit), and payload shape (one long command fails
-// exactly like many short ones). Best remaining lead is to compare the actual
-// USB traffic -- the armed length in the 0xB9 header versus the bytes the
-// bulk-out pipe really puts on the wire -- between the two paths.
-//
-// Chunking at 64 is transparent to GPIB framing: tested directly by splitting
-// a command across a chunk boundary, which produced one correct response and
-// an empty error queue. It costs nothing measurable either, because the cost
-// is per-byte inside the firmware, not per-transfer -- so this cap is cheap
-// insurance, not a performance compromise.
+// So 64 is now a free choice rather than a workaround, and it is KEPT
+// deliberately: chunking costs nothing measurable (the cost is per byte inside
+// the firmware, not per transfer), it is transparent to GPIB framing (verified
+// by splitting a command across a chunk boundary), and this ceiling has been
+// misdiagnosed twice already. Raise it only with a soak behind it. The runtime
+// override `gpibctl chunk <n>` (0 = no chunking) exists to test that without a
+// rebuild-and-replug cycle per experiment.
 #define KUSB_MAX_DATA_CHUNK     64
 
 // ---------------------------------------------------------------------------

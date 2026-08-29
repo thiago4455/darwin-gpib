@@ -128,6 +128,14 @@ public:
         return GPIBT_ERR_NOT_READY;
     }
 
+    /// Diagnostic: override the per-transfer data chunk size at runtime.
+    /// 0 means "no chunking". Only meaningful for transports that chunk;
+    /// exists so the KUSB-488B's ~85-byte unchunked write ceiling can be
+    /// investigated without a rebuild-and-replug cycle per experiment.
+    virtual uint32_t setMaxDataChunk(uint32_t /*bytes*/) {
+        return GPIBT_ERR_NOT_READY;   // transport does not chunk
+    }
+
     virtual uint32_t writeRawRegister(uint16_t reg, uint8_t value) {
         (void)reg; (void)value;
         return GPIBT_ERR_IO;

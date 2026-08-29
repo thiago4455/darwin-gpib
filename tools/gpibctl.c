@@ -95,10 +95,11 @@ int main(int argc, char **argv) {
     int poke  = (strcmp(cmd, "poke") == 0);
     int peek  = (strcmp(cmd, "peek") == 0);
     int reinit = (strcmp(cmd, "reinit") == 0);
+    int chunk  = (strcmp(cmd, "chunk") == 0);
     int usbrst = (strcmp(cmd, "usbreset") == 0);
-    if (strcmp(cmd, "lines") != 0 && !sweep && !poke && !peek && !reinit && !usbrst) {
+    if (strcmp(cmd, "lines") != 0 && !sweep && !poke && !peek && !reinit && !usbrst && !chunk) {
         fprintf(stderr,
-                "usage: %s lines|regs|peek <reg>|poke <reg> <val>|reinit|usbreset [board]\n"
+                "usage: %s lines|regs|peek <reg>|poke <reg> <val>|reinit|usbreset|chunk <n> [board]\n"
                 "  reinit    re-run the chip bring-up to clear a wedged core\n"
                 "  usbreset  force USB re-enumeration (software replug)\n",
                 argv[0]);
@@ -112,8 +113,11 @@ int main(int argc, char **argv) {
         fprintf(stderr, "usage: %s poke <reg> <val> [board]\n", argv[0]);
         return 2;
     }
-    if (poke) board = (argc > 4) ? atoi(argv[4]) : 0;
-    if (peek) board = (argc > 3) ? atoi(argv[3]) : 0;
+    if (poke)  board = (argc > 4) ? atoi(argv[4]) : 0;
+    if (peek)  board = (argc > 3) ? atoi(argv[3]) : 0;
+    // `chunk <n>` takes its own argument, so the default board parse at the top
+    // would otherwise read the chunk size as a board index.
+    if (chunk) board = (argc > 3) ? atoi(argv[3]) : 0;
 
     xpc_connection_t conn = xpc_connection_create_mach_service(
         GPIBD_SERVICE_NAME, NULL, 0);
@@ -170,6 +174,34 @@ int main(int argc, char **argv) {
             GPIBLineStatusOut st; memcpy(&st, o, sizeof(st));
             if (st.line_status & 0x8000) printf("reg 0x%03x = 0x%02x\n", reg, st.line_status & 0xFF);
             else printf("reg 0x%03x = read failed (iberr %u)\n", reg, st.iberr);
+        }
+        xpc_release(r);
+        return 0;
+    }
+    if (chunk) {
+        // Diagnostic: set the per-transfer data chunk size. 0 = do not chunk,
+        // which is the configuration that fails above ~85 bytes.
+        unsigned n = (argc > 2) ? (unsigned)strtoul(argv[2], NULL, 0) : 64;
+        int32_t tagged = (int32_t)(0x50000000u | (n & 0xFFFFu));
+        GPIBHandleIn pin = { .handle = tagged, .reserved = 0 };
+        xpc_object_t m = xpc_dictionary_create(NULL, NULL, 0);
+        xpc_dictionary_set_uint64(m, GPIBD_KEY_OP, kGPIBSel_LineStatus);
+        xpc_dictionary_set_uint64(m, GPIBD_KEY_BOARD, (uint64_t)board);
+        xpc_dictionary_set_data(m, GPIBD_KEY_IN, &pin, sizeof(pin));
+        xpc_dictionary_set_uint64(m, GPIBD_KEY_OUTCAP, sizeof(GPIBLineStatusOut));
+        xpc_object_t r = xpc_connection_send_message_with_reply_sync(conn, m);
+        xpc_release(m);
+        size_t osz = 0;
+        const void *o = xpc_dictionary_get_data(r, GPIBD_KEY_OUT, &osz);
+        if (o && osz >= sizeof(GPIBLineStatusOut)) {
+            const GPIBLineStatusOut *out = (const GPIBLineStatusOut *)o;
+            printf("chunk -> %u (%s, iberr %u)\n", n,
+                   out->line_status ? "ok" : "failed", out->iberr);
+        } else {
+            int64_t kr = xpc_dictionary_get_int64(r, GPIBD_KEY_KR);
+            const char *msg = xpc_dictionary_get_string(r, GPIBD_KEY_MSG);
+            printf("chunk -> no reply (kr=%lld osz=%zu msg=%s)\n",
+                   (long long)kr, osz, msg ? msg : "-");
         }
         xpc_release(r);
         return 0;

@@ -440,6 +440,14 @@ static kern_return_t handleLineStatus(GPIBUserClient *uc,
         lines = (uint16_t)(rc == 0 ? 0x8000 : 0);
         iberr = rc;
         ibsta = 0x0100;
+    } else if (tag == 0x50000000u) {
+        // TEMPORARY: set the transfer chunk size to (handle & 0xFFFF).
+        // 0 means "do not chunk". Lets the ~85-byte unchunked write ceiling be
+        // bisected without a rebuild and replug per experiment.
+        uint32_t rc = board->setMaxDataChunkDiag(h & 0xFFFFu);
+        lines = (uint16_t)(rc == 0 ? 0x8000 : 0);
+        iberr = rc;
+        ibsta = 0x0100;
     } else if (tag == 0x20000000u) {
         // TEMPORARY: write register (handle >> 8) & 0xFFF = handle & 0xFF
         uint32_t rc = board->writeRawRegisterDiag(

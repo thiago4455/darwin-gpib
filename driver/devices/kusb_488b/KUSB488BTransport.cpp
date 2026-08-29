@@ -23,6 +23,12 @@ namespace {
 constexpr uint32_t kControlTimeoutMs = 1000;
 constexpr uint32_t kStatusPollLimit  = 100000;   // safety bound on poll loops
 
+// How long pollStatus() tolerates the device refusing status requests before
+// declaring the transfer lost. Must exceed the longest a transfer can keep the
+// firmware too busy to answer; a 1000-byte write is ~150 ms of GPIB time, so
+// this is deliberately well past that.
+constexpr uint64_t kStatusGlitchBudgetNs = 500ull * 1000ull * 1000ull;   // 500 ms
+
 // NEC7210 auxiliary commands. The FPGA core exposes AUXMR at register 5 and
 // uses the standard encoding — confirmed from the Windows driver, which
 // computes `enable ? 0x1F : 0x17` for REN and `enable ? 0x09 : 0x01` for ist.
@@ -563,6 +569,8 @@ uint32_t KUSB488BTransport::pollStatus(uint32_t statusLen, uint32_t countWidth,
         ? (clock_gettime_nsec_np(CLOCK_UPTIME_RAW) + (uint64_t)timeout_us * 1000ull)
         : 0;
 
+    uint64_t glitchStart = 0;
+
     for (uint32_t spins = 0; spins < kStatusPollLimit; ++spins) {
         if (deadline && clock_gettime_nsec_np(CLOCK_UPTIME_RAW) > deadline) {
             os_log(OS_LOG_DEFAULT, "kusb_488b: pollStatus timed out after %u us",
@@ -573,21 +581,43 @@ uint32_t KUSB488BTransport::pollStatus(uint32_t statusLen, uint32_t countWidth,
         uint16_t got = 0;
         uint32_t rc = controlIn(KUSB_REQ_STATUS, 0, 0, buf,
                                 (uint16_t)statusLen, &got);
-        if (rc != GPIBT_OK) {
-            // The very first status poll right after a bulk-out sometimes
-            // fails at the USB transfer level (endpoint 0 still finishing
-            // up from the just-completed bulk transfer). Retry a few times
-            // before giving up instead of failing on the first glitch.
-            if (spins < 5) { IOSleep(2); continue; }
-            return GPIBT_ERR_IO;
+        if (rc != GPIBT_OK || got < statusLen) {
+            // The device stops answering status requests while it is busy with
+            // a transfer, and the bigger the transfer the longer that lasts.
+            // This used to allow 5 retries of IOSleep(2) -- a 10 ms budget --
+            // which is why an un-chunked write failed above a size threshold
+            // that moved between builds: it is a timing limit, not a buffer
+            // limit. Measured 2026-08-28: the boundary sat at exactly 90 bytes
+            // OK / 91 bytes GPIBT_ERR_IO, and had been 85/90 on the previous
+            // build. The harness never hit it because its equivalent budget is
+            // 5 x 5 ms and it sleeps between polls.
+            //
+            // Budget is now time-based and generous. This is an error path:
+            // being patient here costs nothing when things are healthy, and
+            // the caller's own timeout still bounds the whole operation.
+            if (glitchStart == 0) {
+                glitchStart = clock_gettime_nsec_np(CLOCK_UPTIME_RAW);
+            } else if (clock_gettime_nsec_np(CLOCK_UPTIME_RAW) - glitchStart
+                       > kStatusGlitchBudgetNs) {
+                os_log(OS_LOG_DEFAULT,
+                       "kusb_488b: pollStatus gave up after %llu ms of glitches",
+                       kStatusGlitchBudgetNs / 1000000ull);
+                return GPIBT_ERR_IO;
+            }
+            IOSleep(2);
+            continue;
         }
-        if (got < statusLen) {
-            // Same transient-glitch treatment as a hard controlIn failure.
-            if (spins < 5) { IOSleep(2); continue; }
-            return GPIBT_ERR_IO;
-        }
+        glitchStart = 0;
 
-        if (buf[0] != KUSB_STATE_BUSY) {
+        // A short breath between polls. Hammering endpoint 0 flat out is what
+        // makes the device start refusing status requests in the first place
+        // (the 50 Hz rule). Removing an equivalent sleep
+        // from the read loop earlier measured as NO speed-up at all -- 174.7 vs
+        // 177.6 ms on a 570-byte read -- because the cost is per byte in the
+        // firmware, not per poll. So this is free.
+        if (buf[0] == KUSB_STATE_BUSY) { IOSleep(1); continue; }
+
+        {
             if (status) memcpy(status, buf, statusLen);
             if (outCount) {
                 uint32_t count = (uint32_t)buf[2] | ((uint32_t)buf[3] << 8);
@@ -858,6 +888,14 @@ void KUSB488BTransport::releaseRfdHoldoffIfPending() {
 // The vendor retries once on a bad status before giving up; mirrored here.
 // Note this request STALLs if issued while a transfer is already armed, so
 // it must come before beginTransfer(), never after.
+// Diagnostic only. 0 disables chunking entirely, which is the configuration
+// that fails above ~85 bytes -- see the KUSB_MAX_DATA_CHUNK comment.
+uint32_t KUSB488BTransport::setMaxDataChunk(uint32_t bytes) {
+    os_log(OS_LOG_DEFAULT, "kusb_488b: maxDataChunk %u -> %u", maxDataChunk_, bytes);
+    maxDataChunk_ = bytes;
+    return GPIBT_OK;
+}
+
 uint32_t KUSB488BTransport::goToStandby() {
     for (int attempt = 0; attempt < 2; ++attempt) {
         uint32_t rc = controlOut(KUSB_REQ_GTS, 0, 0, nullptr, 0);
@@ -961,7 +999,7 @@ uint32_t KUSB488BTransport::writeDataViaFirmware(const uint8_t *buf, uint32_t le
     uint32_t done = 0;
     while (done < len) {
         uint32_t chunk = len - done;
-        if (chunk > KUSB_MAX_DATA_CHUNK) chunk = KUSB_MAX_DATA_CHUNK;
+        if (maxDataChunk_ && chunk > maxDataChunk_) chunk = maxDataChunk_;
         const bool lastChunk = (done + chunk == len);
 
         // wValue bit 8 is send_eoi, and matches the vendor exactly. EOI is
@@ -969,16 +1007,6 @@ uint32_t KUSB488BTransport::writeDataViaFirmware(const uint8_t *buf, uint32_t le
         // every chunk, so it is only set on the final chunk.
         uint16_t wValue = (uint16_t)(((send_eoi && lastChunk) ? 1u : 0u)
                                      << KUSB_WRITE_EOI_SHIFT);
-        // Wire trace for the unexplained harness/driver divergence above ~85
-        // bytes: the harness sends what looks like the identical 0xB9 arm and
-        // one bulk-out and succeeds to 1000 B, while this path fails at 90 with
-        // count=0. Logging what each side actually puts on the wire is the only
-        // way left to tell them apart -- header timeout, transfer freshness and
-        // payload shape are all ruled out.
-        os_log(OS_LOG_DEFAULT,
-               "kusb_488b: WRITE arm len=%u chunk=%u wValue=0x%04x eoi=%d timeout_us=%u",
-               len, chunk, wValue, (send_eoi && lastChunk) ? 1 : 0, timeout_us);
-
         rc = beginTransfer(KUSB_REQ_BEGIN_WRITE, wValue, 0, chunk, timeout_us);
         if (rc != GPIBT_OK) return rc;
 
@@ -988,8 +1016,6 @@ uint32_t KUSB488BTransport::writeDataViaFirmware(const uint8_t *buf, uint32_t le
         uint32_t count = 0;
         rc = pollStatus(KUSB_STATUS_LEN_WRITE, KUSB_COUNT_WIDTH_DATA, timeout_us,
                         nullptr, &count, nullptr);
-        os_log(OS_LOG_DEFAULT, "kusb_488b: WRITE done rc=%u count=%u of %u",
-               rc, count, chunk);
         if (rc != GPIBT_OK) return rc;
         if (outBytesWritten) *outBytesWritten = done + count;
         if (count != chunk) return GPIBT_ERR_NO_LISTENER;

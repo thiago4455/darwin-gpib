@@ -752,6 +752,11 @@ uint32_t GPIBBoard::readRawRegisterDiag(uint16_t reg, uint8_t *outValue) {
     return transport_->readRawRegister(reg, outValue);
 }
 
+uint32_t GPIBBoard::setMaxDataChunkDiag(uint32_t bytes) {
+    if (!transport_) return ENEB;
+    return transport_->setMaxDataChunk(bytes);
+}
+
 uint32_t GPIBBoard::writeRawRegisterDiag(uint16_t reg, uint8_t value) {
     if (!transport_) return 0xFF;
     return transport_->writeRawRegister(reg, value);

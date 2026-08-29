@@ -17,6 +17,7 @@
 #include <stdint.h>
 
 #include "GPIBTransport.h"
+#include "kusb_488b_protocol.h"
 
 class IOService;
 class IOUSBHostInterface;
@@ -92,6 +93,10 @@ private:
     // request 0xB7 == ibgts. Must be issued between the addressing command
     // bytes and the data phase of every firmware-path transfer.
     uint32_t goToStandby();
+
+    /// Runtime-overridable chunk size; defaults to KUSB_MAX_DATA_CHUNK.
+    uint32_t setMaxDataChunk(uint32_t bytes) override;
+    uint32_t maxDataChunk_ = KUSB_MAX_DATA_CHUNK;
 
     uint32_t controlOut(uint8_t request, uint16_t wValue, uint16_t wIndex,
                         const uint8_t *data, uint16_t len);
