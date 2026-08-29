@@ -27,6 +27,11 @@ constexpr uint32_t kStatusPollLimit  = 100000;   // safety bound on poll loops
 // declaring the transfer lost. Must exceed the longest a transfer can keep the
 // firmware too busy to answer; a 1000-byte write is ~150 ms of GPIB time, so
 // this is deliberately well past that.
+// Status polls issued back-to-back before backing off to a sleep. Each is a
+// USB control transfer at ~0.3 ms, so this is ~10 ms of fast polling -- enough
+// to cover a 64-byte chunk without a sleep in the path.
+constexpr uint32_t kFastPolls = 32;
+
 constexpr uint64_t kStatusGlitchBudgetNs = 500ull * 1000ull * 1000ull;   // 500 ms
 
 // NEC7210 auxiliary commands. The FPGA core exposes AUXMR at register 5 and
@@ -609,13 +614,25 @@ uint32_t KUSB488BTransport::pollStatus(uint32_t statusLen, uint32_t countWidth,
         }
         glitchStart = 0;
 
-        // A short breath between polls. Hammering endpoint 0 flat out is what
-        // makes the device start refusing status requests in the first place
-        // (the 50 Hz rule). Removing an equivalent sleep
-        // from the read loop earlier measured as NO speed-up at all -- 174.7 vs
-        // 177.6 ms on a 570-byte read -- because the cost is per byte in the
-        // firmware, not per poll. So this is free.
-        if (buf[0] == KUSB_STATE_BUSY) { IOSleep(1); continue; }
+        // Adaptive: spin for the first few polls, then back off.
+        //
+        // Hammering endpoint 0 flat out is what makes the device start refusing
+        // status requests (the 50 Hz rule), so an unbounded spin is wrong. But
+        // an unconditional IOSleep(1) is also wrong, and measurably so:
+        // IOSleep's granularity is far coarser than 1 ms, and a chunked write
+        // runs one poll loop PER CHUNK, so a 1000-byte write at chunk 64 went
+        // from ~154 ms to 504 ms -- 16 loops each over-waiting. Reads hid this
+        // because a read is one transfer with one loop, which is why the first
+        // measurement of this said "free".
+        //
+        // So: spin while a short transfer is finishing, and only back off once
+        // it is clear this is a long one. kFastPolls x ~0.3 ms covers roughly a
+        // 64-byte chunk; past that the sleep costs nothing next to the transfer
+        // itself and keeps the request rate off the device.
+        if (buf[0] == KUSB_STATE_BUSY) {
+            if (spins >= kFastPolls) IOSleep(1);
+            continue;
+        }
 
         {
             if (status) memcpy(status, buf, statusLen);

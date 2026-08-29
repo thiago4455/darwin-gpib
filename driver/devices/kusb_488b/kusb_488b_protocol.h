@@ -149,12 +149,18 @@
 // 100 / 200 / 400 / 700 / 1000 bytes all clean, 1000 B in 153.7 ms
 // (~154 us/byte), empty instrument error queue, healthy device after each.
 //
-// So 64 is now a free choice rather than a workaround, and it is KEPT
-// deliberately: chunking costs nothing measurable (the cost is per byte inside
-// the firmware, not per transfer), it is transparent to GPIB framing (verified
-// by splitting a command across a chunk boundary), and this ceiling has been
-// misdiagnosed twice already. Raise it only with a soak behind it. The runtime
-// override `gpibctl chunk <n>` (0 = no chunking) exists to test that without a
+// 64 is now a choice rather than a workaround, and it is NOT free: measured on
+// a 1000-byte write, chunk 64 costs ~18% against no chunking --
+//   chunk 64  182 us/B | chunk 256  162 | chunk 512  157 | unchunked  154
+// An earlier claim here that chunking "costs nothing measurable" was wrong; it
+// came from measuring reads (one transfer, one poll loop) and un-chunked
+// writes, never a large chunked write.
+//
+// Kept at 64 anyway, for now: the overhead is modest, chunking is transparent
+// to GPIB framing (verified by splitting a command across a chunk boundary),
+// and this ceiling has been misdiagnosed twice already. Raising it to 512 is
+// the obvious win if a soak backs it up. The runtime override
+// `gpibctl chunk <n>` (0 = no chunking) exists to test exactly that without a
 // rebuild-and-replug cycle per experiment.
 #define KUSB_MAX_DATA_CHUNK     64
 
