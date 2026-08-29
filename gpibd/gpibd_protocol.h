@@ -23,6 +23,8 @@
 // ---------------------------------------------------------------------------
 
 /// uint64 — a kGPIBSel_* value, or GPIBD_OP_PROBE.
+#include <stdint.h>
+
 #define GPIBD_KEY_OP        "op"
 
 /// Pseudo-selector: resolve and open the board's user client without issuing
@@ -30,6 +32,27 @@
 /// operation failed" (EDVR) without burning a round trip on every ib* call,
 /// preserving libgpib's original error semantics.
 #define GPIBD_OP_PROBE      0xFFFFFFFFu
+
+/// Pseudo-selector: enumerate attached boards. Answers "what is there?" without
+/// the caller probing 0..15 blindly, each a full round trip against a broker
+/// that may need launching. Deliberately does NOT open a user client for each
+/// board -- enumeration must stay cheap and must not fail because one adapter
+/// is busy or wedged. Reply carries GPIBD_KEY_BOARDS.
+#define GPIBD_OP_LIST_BOARDS 0xFFFFFFFEu
+
+/// The reply carries a GPIBDBoardList under the ordinary GPIBD_KEY_OUT, so
+/// clients read it with the same path as any other call.
+#define GPIBD_MODEL_MAX     64
+
+typedef struct GPIBDBoardInfo {
+    uint32_t index;                     ///< libgpib board index ("gpib0" == 0)
+    char     model[GPIBD_MODEL_MAX];    ///< adapter model, NUL-terminated
+} GPIBDBoardInfo;
+
+typedef struct GPIBDBoardList {
+    uint32_t       count;
+    GPIBDBoardInfo boards[16];
+} GPIBDBoardList;
 /// uint64 — libgpib board index (0 == "gpib0").
 #define GPIBD_KEY_BOARD     "board"
 /// data — the selector's input struct, verbatim.

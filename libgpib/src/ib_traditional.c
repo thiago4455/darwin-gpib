@@ -165,6 +165,18 @@ int ibwrt(int ud, const void *buf, long cnt) {
     GPIBWriteIn *in = (GPIBWriteIn *)calloc(1, in_sz);
     if (!in) return gpib_lib_return_err(EDVR);
     in->handle   = gpib_lib_handle_of(ud);
+    // Deliberately unconditional, and NOT a bug that blocks chunked writes.
+    //
+    // The board ANDs this with the descriptor's EOT setting
+    // (GPIBBoard.cpp: `send_eoi && d->eot`, with IbcEOT setting d->eot), so the
+    // effective EOI is exactly d->eot -- which is what linux-gpib does and what
+    // ibeot() configures. A caller splitting a large message therefore works
+    // today: ibeot(0) on the intermediate chunks, ibeot(1) on the last.
+    //
+    // libgpib does not keep a local copy of EOT (it lives in the descriptor,
+    // driver-side), so passing anything but 1 here would mean duplicating
+    // driver state in the client. Leaving the AND downstream is the cleaner
+    // split; this comment exists because the hardcode reads like a bug.
     in->send_eoi = 1;
     in->length   = (uint32_t)cnt;
     memcpy(in->data, buf, (size_t)cnt);
@@ -257,7 +269,9 @@ int ibsre(int ud, int v) {
 int ibwait(int ud, int mask) {
     gpib_conn_t c = gpib_lib_conn_for_board(gpib_lib_board_of(ud));
     if (c == GPIB_CONN_NULL) return ERR;
-    GPIBWaitIn in = { gpib_lib_handle_of(ud), mask, 3000000, 0 };
+    // timeout 0 = "use the descriptor's", so ibtmo() actually governs ibwait.
+    // This used to hardcode 3 s regardless of what the caller had configured.
+    GPIBWaitIn in = { gpib_lib_handle_of(ud), mask, 0, 0 };
     GPIBStatusOut out = {0};
     size_t sz = sizeof(out);
     if (gpib_lib_call_struct(c, kGPIBSel_Wait,

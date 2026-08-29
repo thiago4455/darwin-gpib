@@ -98,20 +98,34 @@ kern_return_t IMPL(kusb_488b, Start) {
     }
 
     // Constructed, not just allocated — see IONewZeroConstruct in DriverUtils.h.
+    // Every failure from here on MUST close the interface before returning.
+    //
+    // DriverKit does not call Stop() when Start() fails, so nothing else will
+    // undo the Open() above. free() releases our *retain*, which is a different
+    // thing: the open session stays held, leaving a device that is claimed but
+    // has no working driver, and a re-match cannot Open() it again. That is
+    // reachable in practice because attach() runs the bring-up against a device
+    // that may already be wedged, so a wedged adapter would otherwise turn into
+    // a claimed-and-unusable one.
     ivars->transport = IONewZeroConstruct<KUSB488BTransport>();
     if (!ivars->transport || !ivars->transport->init(usbInterface, this)) {
         os_log(OS_LOG_DEFAULT, "kusb_488b: transport init failed");
+        usbInterface->Close(this, 0);
         return kIOReturnNoMemory;
     }
     uint32_t rc = ivars->transport->attach();
     if (rc != 0) {
         os_log(OS_LOG_DEFAULT, "kusb_488b: transport attach failed rc=%u", rc);
+        ivars->transport->detach();
+        usbInterface->Close(this, 0);
         return kIOReturnError;
     }
 
     ivars->board = IONewZero(GPIBBoard, 1);
     if (!ivars->board || !ivars->board->init(ivars->transport)) {
         os_log(OS_LOG_DEFAULT, "kusb_488b: board init failed");
+        ivars->transport->detach();
+        usbInterface->Close(this, 0);
         return kIOReturnNoMemory;
     }
 

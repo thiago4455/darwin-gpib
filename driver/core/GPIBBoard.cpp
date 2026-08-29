@@ -3,6 +3,7 @@
 //  darwin-gpib driver
 //
 
+#include <time.h>
 #include <os/log.h>
 #include <DriverKit/IOLib.h>
 
@@ -778,16 +779,55 @@ uint32_t GPIBBoard::busLineStatus(uint16_t *outLines, uint32_t *outIberr) {
 }
 
 uint32_t GPIBBoard::waitForStatus(int32_t handle, int32_t mask,
-                                  uint32_t /*timeout_us*/, uint32_t *outIberr) {
-    // M1: every other op is synchronous so ibwait returns the last status.
-    // Async masks (SRQI, RQS, EVENT...) need interrupt-pipe support — M2.
+                                  uint32_t timeout_us, uint32_t *outIberr) {
     GPIBDescriptor *d = descriptorFor(handle);
     if (!d) {
         if (outIberr) *outIberr = EARG;
         ibsta_ = ERR;
         return ibsta_;
     }
-    (void)mask;
     if (outIberr) *outIberr = 0;
-    return ibsta_;
+
+    // A timeout of 0 means "use the descriptor's", which is what ibwait passes.
+    // It used to send a hardcoded 3 s regardless of what ibtmo() had set, and
+    // this function ignored the value anyway.
+    const uint32_t effective = timeout_us ? timeout_us : d->timeout_us;
+
+    // Everything except SRQ is synchronous here: by the time ibwait is called
+    // the operation it would have waited for has already completed, so the
+    // current status is the answer. SRQ is the one bit that genuinely needs
+    // waiting, and a VISA layer building VI_EVENT_SERVICE_REQ on top of polled
+    // SRQ needs this to be one blocking call rather than a spin in userspace.
+    if ((mask & (SRQI | RQS)) == 0) {
+        return ibsta_;
+    }
+
+    const uint64_t deadline = (effective == 0xFFFFFFFFu)
+        ? 0                                     // TNONE: wait indefinitely
+        : clock_gettime_nsec_np(CLOCK_UPTIME_RAW) + (uint64_t)effective * 1000ull;
+
+    for (;;) {
+        uint16_t lines = 0;
+        if (transport_ && transport_->readBusLines(&lines) == 0) {
+            if ((lines & ValidSRQ) && (lines & BusSRQ)) {
+                ibsta_ = (ibsta_ & ~TIMO) | SRQI | CMPL;
+                return ibsta_;
+            }
+        }
+        if (deadline && clock_gettime_nsec_np(CLOCK_UPTIME_RAW) > deadline) {
+            ibsta_ = (ibsta_ & ~SRQI) | TIMO | CMPL;
+            return ibsta_;
+        }
+        // 20 ms, NOT 2 ms.
+        //
+        // Each iteration is a 0xBD control transfer to the adapter, serviced by
+        // the firmware's RTX51 scheduler. A 2 ms interval is ~500 requests per
+        // second, and measured on hardware that flooding wedged the engine:
+        // 1.1 s of it was enough that every following bulkOut failed
+        // (0xe0005000) and the bus needed a physical replug. SRQ is a level on
+        // the bus, not an edge, so it cannot be missed by polling slowly --
+        // 50 Hz is far more responsiveness than any instrument needs, and this
+        // must not disturb the session it is running alongside.
+        IOSleep(20);
+    }
 }

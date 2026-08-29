@@ -108,6 +108,13 @@ kern_return_t IMPL(GPIBUserClient, Start) {
 
 kern_return_t IMPL(GPIBUserClient, Stop) {
     os_log(OS_LOG_DEFAULT, "GPIBUserClient: stop");
+    // ivars->board is a raw pointer BORROWED from the provider's ivars, with
+    // no retain -- and the provider's free() deletes it. Drop it here so a
+    // dispatch that races termination fails cleanly (boardForDispatch()
+    // returns null, which every handler already checks) instead of touching
+    // freed memory. Termination ordering usually makes this unreachable; it
+    // is not guaranteed to under sudden device removal.
+    if (ivars) ivars->board = nullptr;
     return Stop(provider, SUPERDISPATCH);
 }
 

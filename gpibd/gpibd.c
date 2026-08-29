@@ -164,6 +164,51 @@ static io_service_t copy_service_for_board(int board) {
     return result;
 }
 
+/// Human-readable adapter model for a driver's IOUserClass. Keep in sync with
+/// kUserClasses.
+static const char *model_for_user_class(const char *userClass) {
+    if (strcmp(userClass, "kusb_488b") == 0)     return "Keithley KUSB-488B";
+    if (strcmp(userClass, "ni_usb") == 0)        return "NI GPIB-USB-HS";
+    if (strcmp(userClass, "agilent_82357") == 0) return "Agilent 82357";
+    return userClass;
+}
+
+/// Fill `list` with every attached board, in the same registry order
+/// copy_service_for_board() uses, so indices agree with every other call.
+static void enumerate_boards(GPIBDBoardList *list) {
+    memset(list, 0, sizeof(*list));
+
+    io_iterator_t iter = IO_OBJECT_NULL;
+    CFMutableDictionaryRef matching = IOServiceMatching("IOUserService");
+    if (!matching) return;
+    if (IOServiceGetMatchingServices(kIOMainPortDefault, matching, &iter) != KERN_SUCCESS)
+        return;
+
+    io_service_t service;
+    while ((service = IOIteratorNext(iter)) != IO_OBJECT_NULL &&
+           list->count < GPIBD_MAX_BOARDS) {
+        CFStringRef userClass = IORegistryEntryCreateCFProperty(
+            service, CFSTR("IOUserClass"), kCFAllocatorDefault, 0);
+        if (userClass) {
+            char name[128] = {0};
+            if (CFStringGetCString(userClass, name, sizeof(name), kCFStringEncodingUTF8)) {
+                for (size_t i = 0; i < kUserClassCount; ++i) {
+                    if (strcmp(name, kUserClasses[i]) != 0) continue;
+                    GPIBDBoardInfo *info = &list->boards[list->count];
+                    info->index = (uint32_t)list->count;
+                    snprintf(info->model, sizeof(info->model), "%s",
+                             model_for_user_class(name));
+                    list->count++;
+                    break;
+                }
+            }
+            CFRelease(userClass);
+        }
+        IOObjectRelease(service);
+    }
+    IOObjectRelease(iter);
+}
+
 /// Opens (and caches) the user client for a board. Cached connections are
 /// dropped on failure so a replugged adapter recovers without a restart.
 static int64_t connection_for_board(int board, io_connect_t *out) {
@@ -249,6 +294,23 @@ static void handle_request(xpc_object_t request, gpibd_session *session) {
 
     if (cap > GPIBD_MAX_OUT) {
         reply_error(request, GPIBD_ERR_BAD_REQUEST, "output cap too large");
+        return;
+    }
+
+    // Enumeration is answered before any board is resolved: "nothing attached"
+    // is a valid answer, not an error, and opening a user client per board
+    // would make listing fail whenever one adapter is busy or wedged.
+    if (op == GPIBD_OP_LIST_BOARDS) {
+        GPIBDBoardList list;
+        enumerate_boards(&list);
+        xpc_object_t reply = xpc_dictionary_create_reply(request);
+        if (reply) {
+            xpc_dictionary_set_int64(reply, GPIBD_KEY_KR, 0);
+            xpc_dictionary_set_data(reply, GPIBD_KEY_OUT, &list, sizeof(list));
+            xpc_connection_send_message(
+                xpc_dictionary_get_remote_connection(request), reply);
+            xpc_release(reply);
+        }
         return;
     }
 

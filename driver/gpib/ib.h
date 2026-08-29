@@ -127,6 +127,22 @@ extern int ibtmo( int ud, int v );
 extern int ibtrg( int ud );
 extern void ibvers( char **version);
 extern int ibwait( int ud, int mask );
+struct gpib_board_info {
+    int  index;         ///< libgpib board index ("gpib0" == 0)
+    char model[64];     ///< adapter model, NUL-terminated
+};
+
+/// macOS extension, not part of the linux-gpib API.
+///
+/// Enumerate attached GPIB boards in one call. Without this a caller wanting
+/// to know what is present -- viFindRsrc, a device browser -- has to probe
+/// indices 0..15 blindly, each a full XPC round trip against a broker that may
+/// need launching. Fills up to `max` entries and returns the number written,
+/// or a negative value if the broker could not be reached. Does not open a
+/// user client per board, so it stays cheap and does not fail because one
+/// adapter is busy.
+extern int gpib_list_boards(struct gpib_board_info *out, int max);
+
 extern int ibwrt( int ud, const void *buf, long count );
 extern int ibwrta( int ud, const void *buf, long count );
 extern int ibwrtf( int ud, const char *file_path );

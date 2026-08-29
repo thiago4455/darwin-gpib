@@ -15,6 +15,7 @@
 //
 
 #include "libgpib_internal.h"
+#include "ib.h"
 
 #include <pthread.h>
 #include <stdio.h>
@@ -230,4 +231,31 @@ kern_return_t gpib_lib_call_struct_var(gpib_conn_t conn, uint32_t selector,
     // intent at the call site.
     return gpib_lib_call_struct(conn, selector, inStruct, inSize,
                                  outStruct, outSize);
+}
+
+// -----------------------------------------------------------------------------
+// Board enumeration (macOS extension)
+// -----------------------------------------------------------------------------
+
+int gpib_list_boards(struct gpib_board_info *out, int max) {
+    if (!out || max <= 0) return -1;
+
+    GPIBDBoardList list;
+    size_t size = sizeof(list);
+    // Board index is irrelevant for this op; the broker answers before it
+    // resolves one, so "nothing attached" comes back as count 0 rather than
+    // GPIBD_ERR_NO_BOARD.
+    int64_t kr = broker_call(0, GPIBD_OP_LIST_BOARDS, NULL, 0, &list, &size);
+    if (kr != 0 || size < sizeof(uint32_t)) return -1;
+
+    int count = (int)list.count;
+    if (count > (int)(sizeof(list.boards) / sizeof(list.boards[0])))
+        count = (int)(sizeof(list.boards) / sizeof(list.boards[0]));
+    if (count > max) count = max;
+
+    for (int i = 0; i < count; ++i) {
+        out[i].index = (int)list.boards[i].index;
+        snprintf(out[i].model, sizeof(out[i].model), "%s", list.boards[i].model);
+    }
+    return count;
 }

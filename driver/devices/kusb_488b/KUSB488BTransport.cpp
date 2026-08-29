@@ -4,6 +4,7 @@
 //
 
 #include <os/log.h>
+#include <time.h>
 #include <string.h>
 
 #include <DriverKit/IOLib.h>
@@ -548,7 +549,27 @@ uint32_t KUSB488BTransport::pollStatus(uint32_t statusLen, uint32_t countWidth,
     uint8_t buf[16];
     if (statusLen > sizeof(buf)) return GPIBT_ERR_IO;
 
+    // Deadline from the caller's timeout. This used to be discarded --
+    // `(void)timeout_us;` sat at the bottom and the only bound was the spin
+    // count, so a device stuck BUSY blocked for kStatusPollLimit control
+    // transfers at ~0.3 ms each: tens of seconds, whatever the caller asked
+    // for. That is a lifecycle problem as much as a latency one, because this
+    // loop runs inside a dispatched user-client method and DriverKit will not
+    // complete Stop()/terminate while one is in flight -- a stuck transfer
+    // stalls extension teardown for the same tens of seconds.
+    //
+    // The spin count stays as a backstop for a clock that misbehaves.
+    const uint64_t deadline = timeout_us
+        ? (clock_gettime_nsec_np(CLOCK_UPTIME_RAW) + (uint64_t)timeout_us * 1000ull)
+        : 0;
+
     for (uint32_t spins = 0; spins < kStatusPollLimit; ++spins) {
+        if (deadline && clock_gettime_nsec_np(CLOCK_UPTIME_RAW) > deadline) {
+            os_log(OS_LOG_DEFAULT, "kusb_488b: pollStatus timed out after %u us",
+                   timeout_us);
+            abortTransfer();
+            return GPIBT_ERR_TIMEOUT;
+        }
         uint16_t got = 0;
         uint32_t rc = controlIn(KUSB_REQ_STATUS, 0, 0, buf,
                                 (uint16_t)statusLen, &got);
@@ -583,7 +604,6 @@ uint32_t KUSB488BTransport::pollStatus(uint32_t statusLen, uint32_t countWidth,
             return GPIBT_OK;
         }
     }
-    (void)timeout_us;
     abortTransfer();
     return GPIBT_ERR_TIMEOUT;
 }
@@ -949,6 +969,16 @@ uint32_t KUSB488BTransport::writeDataViaFirmware(const uint8_t *buf, uint32_t le
         // every chunk, so it is only set on the final chunk.
         uint16_t wValue = (uint16_t)(((send_eoi && lastChunk) ? 1u : 0u)
                                      << KUSB_WRITE_EOI_SHIFT);
+        // Wire trace for the unexplained harness/driver divergence above ~85
+        // bytes: the harness sends what looks like the identical 0xB9 arm and
+        // one bulk-out and succeeds to 1000 B, while this path fails at 90 with
+        // count=0. Logging what each side actually puts on the wire is the only
+        // way left to tell them apart -- header timeout, transfer freshness and
+        // payload shape are all ruled out.
+        os_log(OS_LOG_DEFAULT,
+               "kusb_488b: WRITE arm len=%u chunk=%u wValue=0x%04x eoi=%d timeout_us=%u",
+               len, chunk, wValue, (send_eoi && lastChunk) ? 1 : 0, timeout_us);
+
         rc = beginTransfer(KUSB_REQ_BEGIN_WRITE, wValue, 0, chunk, timeout_us);
         if (rc != GPIBT_OK) return rc;
 
@@ -958,6 +988,8 @@ uint32_t KUSB488BTransport::writeDataViaFirmware(const uint8_t *buf, uint32_t le
         uint32_t count = 0;
         rc = pollStatus(KUSB_STATUS_LEN_WRITE, KUSB_COUNT_WIDTH_DATA, timeout_us,
                         nullptr, &count, nullptr);
+        os_log(OS_LOG_DEFAULT, "kusb_488b: WRITE done rc=%u count=%u of %u",
+               rc, count, chunk);
         if (rc != GPIBT_OK) return rc;
         if (outBytesWritten) *outBytesWritten = done + count;
         if (count != chunk) return GPIBT_ERR_NO_LISTENER;
