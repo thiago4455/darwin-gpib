@@ -18,3 +18,34 @@ As NI's GPIB support ended with macOS 12, this project aims to restore USB GPIB 
 
 > [!IMPORTANT]
 > Of the 3 included drivers, only KUSB-488B is tested against real instruments.
+
+
+## Building
+
+The project builds with Xcode. Open `darwin-gpib.xcodeproj` and build the `Open GPIB` scheme.
+
+That produces the app with the driver extension, the `gpibd` broker and `libgpib` all bundled inside it. Run the app, click **Install driver**, approve the extension in System Settings, and plug in the adapter.
+
+
+### KUSB-488B
+> [!IMPORTANT]
+> The KUSB-488B firmware is not included and should be extracted from the Windows drivers. You generate it yourself from a copy of the KI-488 driver package.
+>
+> You need two files from it: `kusbgpib_fwdlx64.sys` and `USB-GPIB.RBF`. Run `KI-488.exe /a /v"TARGETDIR=C:\KI-488"` to unpack it , then extract the driver package without installing it:
+>
+> ```
+> cd "C:\KI-488\Disk1\NI Command Compatible Driver"
+> setup.exe /a /s /v"/qn TARGETDIR=C:\ki488_admin"
+> ```
+>
+> Both files are in `C:\ki488_admin\Keithley\KIGPIB\X64\NT10\`. Then:
+> ```
+> tools/extract_kusb_firmware.py \
+>     --driver kusbgpib_fwdlx64.sys \
+>     --rbf    USB-GPIB.RBF \
+>     --out    driver/devices/kusb_488b/kusb_488b_firmware_data.h
+> ```
+>
+> Do this **before** building. The generated header is ignored by git and is the only piece not in the repository.
+> 
+> Without that header the build still succeeds. The adapter is recognised, but never leaves loader mode.
